@@ -11,26 +11,20 @@ class Book:
     def __init__(self, title):
         self.title = title
 
-Book("1984") # -> created but not referenced, garbage collected
+Book("1984") 
 
-harryBook = Book("Harry Potter") # -> created and referenced by harryBook
+harryBook = Book("Harry Potter") 
 
-favoriteBook = harryBook # -> favoriteBook references the same object as harryBook
+favoriteBook = harryBook 
 
-twilightBook = Book("Twilight") # -> created and referenced by twilightBook
+twilightBook = Book("Twilight") 
 
-harryBook = None # -> reference to none, but favoriteBook still references the object
+harryBook = None 
 
-favoriteBook = None # -> reference to none, twilightBook still references the object
-
-print("Análise do coletor")
-print(id(Book("1984")))  # Output: <unique_id>
-print(id(harryBook))  # Output: None
-print(id(favoriteBook))  # Output: None
-print(id(twilightBook))  # Output: <unique_id>
+favoriteBook = None 
 
 print("Fim do programa")
-# total de objetos coletados: 3(1984, harrybook, favoriteBook) - twilightBook is still referenced
+print("Total de objetos coletados: 2 (1984, Harry Potter) - Twilight ainda é referenciado por twilightBook")
 #===========================================================
 
 #Exercício 2
@@ -46,7 +40,7 @@ fuscaCar = opalaCar
 golCar = None
 
 print("Análise do coletor")
-# total de objetos coletados: 3(Fusca, Opala, Gol) - all references are set to None or overwritten
+print("Total de objetos coletados: 2 (Fusca, Opala) - Gol ainda é referenciado por fuscaCar e opalaCar")
 #===========================================================
 
 #Exercício 3
@@ -68,7 +62,7 @@ cat = pet
 dog = None
 
 print("Garbage Collector acionado")
-# total de objetos coletados: 4 (Leão, Gato, Cachorro, pet) - all references are set to None or overwritten
+print("Total de objetos coletados: 2 (Leão e Gato) - Cachorro ainda é referenciado por pet e cat")
 #===========================================================
 
 #Exercício 4
@@ -95,7 +89,7 @@ mainProduct = None
 monitor = monitor
 
 print("Verifique os objetos coletados")
-
+print("Total de objetos coletados: 3 (Celular, Notebook, Tablet) - Monitor ainda é referenciado por monitor")
 #===========================================================
 
 #Exercício 5
@@ -116,4 +110,6 @@ carlos = ana
 
 ana = None
 
+
+print("Total de objetos coletados: 0 - Ana, Bruno, Carlos ainda são referenciados")
 print("Encerrando...")
