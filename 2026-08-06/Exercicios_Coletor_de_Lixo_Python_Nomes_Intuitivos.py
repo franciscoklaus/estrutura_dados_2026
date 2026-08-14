@@ -11,6 +11,9 @@ class Book:
     def __init__(self, title):
         self.title = title
 
+    def __del__(self):
+        print(f"Apagando {self.title}")
+
 Book("1984") 
 
 harryBook = Book("Harry Potter") 
@@ -24,6 +27,10 @@ harryBook = None
 favoriteBook = None 
 
 print("Fim do programa")
+
+'''
+
+
 print("Total de objetos coletados: 2 (1984, Harry Potter) - Twilight ainda é referenciado por twilightBook")
 #===========================================================
 
@@ -113,3 +120,5 @@ ana = None
 
 print("Total de objetos coletados: 0 - Ana, Bruno, Carlos ainda são referenciados")
 print("Encerrando...")
+
+'''
