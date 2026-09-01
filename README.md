@@ -74,3 +74,7 @@ tv_sala.canal # 5
 
 </details>
 
+## Aula 2026-08-27
+[Material](./2026-08-27/CleannerBot.py)
+[Material](./2026-08-27/Elevator.py)
+
