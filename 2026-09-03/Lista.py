@@ -36,6 +36,18 @@ class ArrayList:
             newArray[position] = oldArray[position]
 
 
+    def insertAt(self,element : any, position : int) -> None:
+        if position < 0 or position > self.insertPosition:
+            print("Posição inválida")
+            return
+        if self.isMemoryFull():
+            self.increaseMemory()
+        for i in range(self.insertPosition, position, -1):
+            self.arrayList[i] = self.arrayList[i-1]
+        self.arrayList[position] = element
+        self.insertPosition += 1
+
+
     def show(self) -> None:
         for position in range(self.insertPosition):
             print(self.arrayList[position])
