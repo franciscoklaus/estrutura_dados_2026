@@ -83,3 +83,8 @@ tv_sala.canal # 5
 
 [Material](./2026-09-03/Lista.py)
 [Material](./2026-09-03/ListaTeste.py)
+
+## Aula 2026-09-10
+### Lista simplesmente encadeada
+
+[Material](./2026-09-10/ListaSimplementeEncadeada.py)
