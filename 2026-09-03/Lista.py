@@ -46,7 +46,15 @@ class ArrayList:
             self.arrayList[i] = self.arrayList[i-1]
         self.arrayList[position] = element
         self.insertPosition += 1
+        
 
+    def removeAt(self, position : int) -> None:
+        if position < 0 or position >= self.insertPosition:
+            print("Posição inválida")
+            return
+        for i in range(position, self.insertPosition - 1):
+            self.arrayList[i] = self.arrayList[i + 1]
+        self.insertPosition -= 1
 
     def show(self) -> None:
         for position in range(self.insertPosition):
