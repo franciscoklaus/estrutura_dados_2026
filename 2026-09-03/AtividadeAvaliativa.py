@@ -11,140 +11,167 @@ do github deverá constar na postagem.
 """
 Sistema de Fila de Atendimento (posto de saúde, banco, correios, etc)
 
-A ideia é trazer a ArrayList de Lista.py para uma situação real: uma fila de
-atendimento onde a maioria das pessoas entra no final, mas quem tem
-prioridade legal (idoso, gestante, pessoa com deficiência) "fura" a fila e
-entra logo depois do último prioritário já presente.
+Em vez de uma única fila com "furada" por prioridade, cada tipo de
+atendimento tem a sua própria fila (sua própria ArrayList):
+    idoso, gestante, PCD e atendimento normal.
 
-Como a ArrayList é usada:
-- entrada comum          -> ArrayList.insert            (insere no final)
-- entrada prioritária    -> ArrayList.insertAt           (insere em posição específica)
-- chamar próximo da fila -> ArrayList.removeAt(0)        (remove o primeiro, FIFO)
-- desistência de alguém  -> ArrayList.removeAt(posicao)  (remove de qualquer posição)
-- fila vazia?            -> ArrayList.isEmpty
+Todas essas filas ficam guardadas dentro de uma ArrayList "mestra"
+(SistemaDeFilas.filas), na ordem em que devem ser atendidas. É essa lista
+que controla o comportamento da aplicação: para chamar o próximo, o
+sistema percorre essa lista mestra na ordem em que ela está montada e
+atende a primeira fila não vazia que encontrar. Ou seja, a PRIORIDADE de
+atendimento é simplesmente a ORDEM dos elementos dentro da lista mestra -
+para mudar a política de atendimento (ex: dar prioridade máxima a idosos)
+basta reordenar essa lista, sem tocar no resto do código.
 
-Além disso, o PRÓPRIO MENU da aplicação é guardado em uma ArrayList de tuplas
-(código, descrição, função). É essa lista que controla o comportamento do
-programa: o menu impresso e o comando executado vêm dela. Para adicionar uma
-nova funcionalidade ao sistema, basta dar um insert() nessa lista de comandos.
+Como a ArrayList (Lista.py) é usada:
+- cada categoria (idoso, gestante, pcd, normal) tem sua própria fila
+  -> ArrayList.insert            (pessoa entra no final da sua fila)
+- a lista mestra guarda as 4 filas em ordem de prioridade
+  -> ArrayList.insert            (montagem das filas na inicialização)
+- chamar próximo                 -> ArrayList.removeAt(0) (remove o primeiro da fila
+  escolhida, mantendo o FIFO dentro de cada categoria)
+- desistência de alguém          -> ArrayList.removeAt(posicao)
+- fila vazia?                    -> ArrayList.isEmpty
+
+Além disso, o PRÓPRIO MENU da aplicação também é guardado em uma ArrayList
+de tuplas (código, descrição, função). O menu impresso e o comando
+executado vêm dessa lista - para adicionar uma nova funcionalidade ao
+sistema, basta um insert() a mais nela.
 """
 
 from Lista import ArrayList
 
 
-class Pessoa:
-    def __init__(self, nome: str, prioritario: bool = False) -> None:
-        self.nome = nome
-        self.prioritario = prioritario
+# Ordem de atendimento: a posição de cada categoria aqui é a prioridade dela.
+# Mudar a ordem desta lista muda a política de atendimento do sistema inteiro.
+CATEGORIAS = [
+    ("idoso", "Idosos"),
+    ("gestante", "Gestantes"),
+    ("pcd", "Pessoas com deficiência (PCD)"),
+    ("normal", "Atendimento normal"),
+]
 
-    def __str__(self) -> str:
-        marcador = " (prioritário)" if self.prioritario else ""
-        return f"{self.nome}{marcador}"
 
-
-class FilaDeAtendimento:
+class SistemaDeFilas:
     def __init__(self) -> None:
-        self.fila = ArrayList()
+        # Lista mestra: guarda, em ordem de prioridade, uma fila (ArrayList)
+        # para cada categoria de atendimento.
+        self.filas = ArrayList()
+        for chave, nome in CATEGORIAS:
+            self.filas.insert((chave, nome, ArrayList()))
         self.totalAtendidos = 0
 
-    def entrar(self, nome: str, prioritario: bool = False) -> None:
-        pessoa = Pessoa(nome, prioritario)
-        if prioritario:
-            posicao = self._posicaoAposUltimoPrioritario()
-            self.fila.insertAt(pessoa, posicao)
-        else:
-            self.fila.insert(pessoa)
-        print(f"{pessoa} entrou na fila.")
+    def _buscarFila(self, chave: str):
+        for i in range(self.filas.insertPosition):
+            categoriaChave, nome, fila = self.filas.arrayList[i]
+            if categoriaChave == chave:
+                return nome, fila
+        return None, None
 
-    def _posicaoAposUltimoPrioritario(self) -> int:
-        posicao = 0
-        for i in range(self.fila.insertPosition):
-            if self.fila.arrayList[i].prioritario:
-                posicao = i + 1
-        return posicao
+    def entrar(self, chave: str, nomePessoa: str) -> None:
+        nomeCategoria, fila = self._buscarFila(chave)
+        if fila is None:
+            print("Categoria inválida.")
+            return
+        fila.insert(nomePessoa)
+        print(f"{nomePessoa} entrou na fila de {nomeCategoria}.")
 
     def chamarProximo(self) -> None:
-        if self.fila.isEmpty():
-            print("Não há ninguém na fila no momento.")
-            return
-        pessoa = self.fila.arrayList[0]
-        self.fila.removeAt(0)
-        self.totalAtendidos += 1
-        print(f"Chamando: {pessoa}")
+        for i in range(self.filas.insertPosition):
+            _chave, nome, fila = self.filas.arrayList[i]
+            if not fila.isEmpty():
+                pessoa = fila.arrayList[0]
+                fila.removeAt(0)
+                self.totalAtendidos += 1
+                print(f"Chamando: {pessoa} (fila: {nome})")
+                return
+        print("Todas as filas estão vazias no momento.")
 
-    def mostrar(self) -> None:
-        if self.fila.isEmpty():
-            print("Fila vazia.")
-            return
-        print("-- Fila de atendimento --")
-        for i in range(self.fila.insertPosition):
-            print(f"{i + 1}º - {self.fila.arrayList[i]}")
+    def mostrarTudo(self) -> None:
+        algumaOcupada = False
+        for i in range(self.filas.insertPosition):
+            _chave, nome, fila = self.filas.arrayList[i]
+            if fila.isEmpty():
+                continue
+            algumaOcupada = True
+            print(f"-- {nome} --")
+            for j in range(fila.insertPosition):
+                print(f"  {j + 1}º - {fila.arrayList[j]}")
+        if not algumaOcupada:
+            print("Todas as filas estão vazias.")
 
-    def desistir(self, posicao: int) -> None:
+    def desistir(self, chave: str, posicao: int) -> None:
+        nomeCategoria, fila = self._buscarFila(chave)
+        if fila is None:
+            print("Categoria inválida.")
+            return
         indice = posicao - 1
-        if indice < 0 or indice >= self.fila.insertPosition:
+        if indice < 0 or indice >= fila.insertPosition:
             print("Posição inválida.")
             return
-        pessoa = self.fila.arrayList[indice]
-        self.fila.removeAt(indice)
-        print(f"{pessoa} desistiu da fila.")
+        pessoa = fila.arrayList[indice]
+        fila.removeAt(indice)
+        print(f"{pessoa} desistiu da fila de {nomeCategoria}.")
 
 
-def entrarComum(fila: FilaDeAtendimento) -> None:
+def _escolherCategoria() -> str:
+    print("Categorias:")
+    for chave, nome in CATEGORIAS:
+        print(f"  {chave} - {nome}")
+    return input("Categoria: ").strip().lower()
+
+
+def entrarNaFila(sistema: SistemaDeFilas) -> None:
+    chave = _escolherCategoria()
     nome = input("Nome: ").strip()
     if nome:
-        fila.entrar(nome, prioritario=False)
+        sistema.entrar(chave, nome)
 
 
-def entrarPrioritario(fila: FilaDeAtendimento) -> None:
-    nome = input("Nome: ").strip()
-    if nome:
-        fila.entrar(nome, prioritario=True)
+def chamarProximo(sistema: SistemaDeFilas) -> None:
+    sistema.chamarProximo()
 
 
-def chamarProximo(fila: FilaDeAtendimento) -> None:
-    fila.chamarProximo()
+def mostrarFilas(sistema: SistemaDeFilas) -> None:
+    sistema.mostrarTudo()
 
 
-def mostrarFila(fila: FilaDeAtendimento) -> None:
-    fila.mostrar()
-
-
-def desistirDaFila(fila: FilaDeAtendimento) -> None:
-    fila.mostrar()
-    if fila.fila.isEmpty():
-        return
+def desistirDaFila(sistema: SistemaDeFilas) -> None:
+    sistema.mostrarTudo()
+    chave = _escolherCategoria()
     try:
         posicao = int(input("Posição de quem vai desistir: "))
     except ValueError:
         print("Posição inválida.")
         return
-    fila.desistir(posicao)
+    sistema.desistir(chave, posicao)
 
 
-def mostrarResumo(fila: FilaDeAtendimento) -> None:
-    print(f"Pessoas atendidas até agora: {fila.totalAtendidos}")
-    print(f"Pessoas aguardando: {fila.fila.insertPosition}")
+def mostrarResumo(sistema: SistemaDeFilas) -> None:
+    print(f"Pessoas atendidas até agora: {sistema.totalAtendidos}")
+    for i in range(sistema.filas.insertPosition):
+        _chave, nome, fila = sistema.filas.arrayList[i]
+        print(f"  {nome}: {fila.insertPosition} aguardando")
 
 
-def sair(fila: FilaDeAtendimento) -> None:
+def sair(sistema: SistemaDeFilas) -> None:
     print("Encerrando o sistema de atendimento. Até logo!")
 
 
 def main() -> None:
-    fila = FilaDeAtendimento()
+    sistema = SistemaDeFilas()
 
     # A lista de comandos é o que controla o comportamento da aplicação:
     # cada posição guarda (código digitado, descrição, função a executar).
     # Para adicionar um novo comando ao sistema, basta inserir um novo
     # item nessa lista - o menu e o despacho de ações são gerados a partir dela.
     comandos = ArrayList()
-    comandos.insert(("1", "Entrar na fila", entrarComum))
-    comandos.insert(("2", "Entrar na fila prioritária (idoso, gestante, PCD)", entrarPrioritario))
-    comandos.insert(("3", "Chamar próximo da fila", chamarProximo))
-    comandos.insert(("4", "Ver fila completa", mostrarFila))
-    comandos.insert(("5", "Desistir da fila", desistirDaFila))
-    comandos.insert(("6", "Ver resumo do atendimento", mostrarResumo))
+    comandos.insert(("1", "Entrar em uma fila", entrarNaFila))
+    comandos.insert(("2", "Chamar próximo (respeitando a ordem de prioridade)", chamarProximo))
+    comandos.insert(("3", "Ver todas as filas", mostrarFilas))
+    comandos.insert(("4", "Desistir de uma fila", desistirDaFila))
+    comandos.insert(("5", "Ver resumo do atendimento", mostrarResumo))
     comandos.insert(("0", "Sair", sair))
 
     while True:
@@ -166,7 +193,7 @@ def main() -> None:
             print("Opção inválida, tente novamente.")
             continue
 
-        comandoEncontrado(fila)
+        comandoEncontrado(sistema)
 
         if escolha == "0":
             break
