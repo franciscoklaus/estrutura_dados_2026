@@ -81,10 +81,11 @@ tv_sala.canal # 5
 ## Aula 2026-09-03
 ### Listas
 
-[Material](./2026-09-03/Lista.py)
-[Material](./2026-09-03/ListaTeste.py)
-[Atividade Avaliativa](./2026-09-03/AtividadeAvaliativa.py)
-[README](./2026-09-03/README.md)
+* [Material](./2026-09-03/Lista.py)
+* [Material](./2026-09-03/ListaTeste.py)
+
+* [README](./2026-09-03/README.md)
+* [Atividade Avaliativa](./2026-09-03/AtividadeAvaliativa.py)
 
 ## Aula 2026-09-10
 ### Lista simplesmente encadeada
